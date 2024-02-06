@@ -1,0 +1,105 @@
+8)
+ SELECT MAX(S),DEPT_NAME FROM (SELECT SUM(SALARY) S,DEPT_NAME FROM INSTRUCTOR GROUP BY DEPT_NAME) GROUP BY DEPT_NAME;
+
+    MAX(S) DEPT_NAME
+---------- --------------------
+     80000 Elec. Eng.
+    182000 Physics
+    232000 Comp. Sci.
+    170000 Finance
+     72000 Biology
+     40000 Music
+    122000 History
+
+9)
+
+ SELECT DEPT_NAME , AVG_SALARY FROM (SELECT DEPT_NAME,AVG(SALARY) AVG_SALARY FROM INSTRUCTOR GROUP BY DEPT_NAME) WHERE AVG_SALARY>42000;
+
+DEPT_NAME            AVG_SALARY
+-------------------- ----------
+Elec. Eng.                80000
+Physics                   91000
+Comp. Sci.           77333.3333
+Finance                   85000
+Biology                   72000
+History                   61000
+
+6 rows selected.
+
+10)
+
+select course_id,sec_id,count(id) from takes where semester='Spring' and year ='2010' group by course_id,sec_id having count(id) = (select max(c) from (select sec_id,count(id) c from takes where semester='Spring' and year='2010' group by sec_id,course_id));
+
+COURSE_I SEC_ID    COUNT(ID)
+-------- -------- ----------
+CS-315   1                 2
+
+11)
+
+ SELECT name FROM instructor WHERE ID IN (
+  SELECT ID FROM teaches WHERE course_id IN (
+     SELECT course_id FROM takes WHERE ID IN
+      (SELECT ID FROM student WHERE dept_name = 'Comp. Sci.')
+      GROUP BY course_id HAVING
+       COUNT(ID) = (SELECT COUNT(ID) FROM student WHERE dept_name = 'Comp. Sci.')));
+
+NAME
+--------------------
+Srinivasan
+Katz
+
+12)
+  SELECT DEPT_NAME,AVG(SALARY) FROM INSTRUCTOR GROUP BY DEPT_NAME HAVIN
+G AVG(SALARY)>50000 AND COUNT(ID)>2;
+
+DEPT_NAME            AVG(SALARY)
+-------------------- -----------
+Comp. Sci.            77333.3333
+
+OR
+
+SELECT DEPT_NAME,CEIL(AVG(SALARY)) FROM INSTRUCTOR GROUP BY DEPT_NAME HAVING
+    AVG(SALARY)>50000 AND COUNT(ID)>2;
+
+DEPT_NAME            CEIL(AVG(SALARY))
+-------------------- -----------------
+Comp. Sci.                       77334
+
+OR
+ SELECT DEPT_NAME,ROUND(AVG(SALARY),2) FROM INSTRUCTOR GROUP BY DEPT_NA
+ME HAVING
+       AVG(SALARY)>50000 AND COUNT(ID)>2;
+
+DEPT_NAME            ROUND(AVG(SALARY),2)
+-------------------- --------------------
+Comp. Sci.                       77333.33
+
+13)
+
+ WITH MAX_BUDGET(BUDGET) AS
+      (SELECT MAX(BUDGET) FROM DEPARTMENT)
+    SELECT D.DEPT_NAME,D.BUDGET
+    FROM DEPARTMENT D,MAX_BUDGET
+    WHERE D.BUDGET=MAX_BUDGET.BUDGET;
+
+DEPT_NAME                BUDGET
+-------------------- ----------
+Finance                  120000
+
+14)
+ with dept_total(dept_name, value) as
+    (select dept_name, sum(salary)
+    from instructor
+    group by dept_name),
+    dept_total_avg(value) as
+    (select avg(value)
+    from dept_total)
+    select dept_name
+   from dept_total, dept_total_avg
+   where dept_total.value >= dept_total_avg.value;
+
+DEPT_NAME
+--------------------
+Physics
+Comp. Sci.
+Finance

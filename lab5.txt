@@ -1,0 +1,208 @@
+1) 
+select Bdate,address from employee where Fname='John' and Minit='B' and
+ Lname='Smith';
+
+BDATE     ADDRESS
+--------- ------------------------------
+09-JAN-65 731 Fondren, Houston, TX
+
+ select Fname,address from (department natural join employee) where dname='Research';
+
+FNAME           ADDRESS
+--------------- ------------------------------
+Richard         98 Oak Forest, Katy, TX
+John            731 Fondren, Houston, TX
+Franklin        638 Voss, Houston, TX
+Alicia          3321 Castle, Spring, TX
+Jennifer        291 Berry, Bellaire, TX
+Ramesh          975 Fire Oak, Humble, TX
+Joyce           5631 Rice, Houston, TX
+Ahmad           980 Dallas, Houston, TX
+James           450 Stone, Houston, TX
+
+9 rows selected.
+
+2)
+ select project.pnumber,project.dnum,employee.Lname,employee.address ,employee.Bdate from(employee natural join Project natural join department) where project.plocation='Starfford';
+
+
+   PNUMBER       DNUM LNAME           ADDRESS                        BDATE
+---------- ---------- --------------- ------------------------------ ---------
+        30          4 Marini          98 Oak Forest, Katy, TX        30-DEC-62
+        30          4 Marini          98 Oak Forest, Katy, TX        30-DEC-62
+        30          4 Marini          98 Oak Forest, Katy, TX        30-DEC-62
+        30          4 Smith           731 Fondren, Houston, TX       09-JAN-65
+
+3)
+
+SELECT E.FNAME,E.LNAME,S.FNAME,S.LNAME FROM EMPLOYEE E,EMPLOYEE S WHERE S.SUPER_SSN = E.SSN;
+
+FNAME           LNAME           FNAME           LNAME
+--------------- --------------- --------------- ---------------
+Richard         Marini          Richard         Marini
+Franklin        Wong            John            Smith
+James           Borg            Franklin        Wong
+Jennifer        Wallace         Alicia          Zelaya
+James           Borg            Jennifer        Wallace
+Franklin        Wong            Ramesh          Narayan
+Franklin        Wong            Joyce           English
+Jennifer        Wallace         Ahmad           Jabbar
+
+4)
+
+ select pnumber from (Employee natural join Project) where employee.lname ='Smith';
+
+   PNUMBER
+----------
+         1
+         2
+         3
+        10
+        20
+        30
+
+6 rows selected.
+
+5)
+
+select salary*1.10 salary from (employee natural join project) where project.pname='ProductX';
+
+    SALARY
+----------
+     40700
+     33000
+     44000
+     27500
+     47300
+     41800
+     27500
+     27500
+     60500
+
+9 rows selected.
+
+
+  select (1.1*salary) salary from employee e,works_on w,project p where w.essn=e.ssn and p.pnumber=w.pno and p.pname='ProductX';
+
+    SALARY
+----------
+     33000
+     27500
+
+
+6)
+
+ select fname,lname,pname from employee e,project p,works_on w where w.essn=e.ssn and p.pnumber=w.pno order by e.dno,lname,fname;
+
+FNAME           LNAME           PNAME
+--------------- --------------- ---------------
+James           Borg            Reorganization
+Ahmad           Jabbar          Computerization
+Ahmad           Jabbar          Newbenefits
+Jennifer        Wallace         Reorganization
+Jennifer        Wallace         Newbenefits
+Alicia          Zelaya          Computerization
+Alicia          Zelaya          Newbenefits
+Joyce           English         ProductY
+Joyce           English         ProductX
+Ramesh          Narayan         ProductZ
+John            Smith           ProductY
+
+FNAME           LNAME           PNAME
+--------------- --------------- ---------------
+John            Smith           ProductX
+Franklin        Wong            Reorganization
+Franklin        Wong            ProductY
+Franklin        Wong            Computerization
+Franklin        Wong            ProductZ
+
+16 rows selected.
+
+
+7)
+select e.fname from dependent d,employee e where e.fname=d.dependent_name and e.sex=d.sex;
+
+no rows selected
+
+
+SQL> insert into dependent(essn,dependent_name,sex,Bdate,Relationship)
+  2  values (653298653,'Richard','M',TO_DATE('1986-04-05','YYYY-MM-DD'),'Son');
+
+1 row created.
+
+SQL> select e.fname from dependent d,employee e where e.fname=d.dependent_name and e.sex=d.sex;
+
+FNAME
+---------------
+Richard
+
+8)
+
+SQL> select fname from employee where ssn not in (select essn from dependent);
+
+FNAME
+---------------
+Ahmad
+Alicia
+James
+Joyce
+Ramesh
+
+9)
+
+ select distinct(fname) from employee,dependent where dependent.essn=employee.ssn and ssn in (select mgr_ssn from department);
+
+FNAME
+---------------
+Franklin
+Jennifer
+
+10)
+
+ select sum(salary),max(salary),min(salary) from employee;
+
+SUM(SALARY) MAX(SALARY) MIN(SALARY)
+----------- ----------- -----------
+     318000       55000       25000
+
+11)
+
+ select pnumber,pname,count(essn) from (select essn,pnumber,pname from project,works_on where project.pnumber=works_on.pno) group by pnumber,pname;
+
+   PNUMBER PNAME           COUNT(ESSN)
+---------- --------------- -----------
+        20 Reorganization            3
+         1 ProductX                  2
+        10 Computerization           3
+        30 Newbenefits               3
+         2 ProductY                  3
+         3 ProductZ                  2
+
+6 rows selected.
+
+12)
+
+ select pnumber,pname,count(essn) from (select essn,pnumber,pname from project,works_on where project.pnumber=works_on.pno) group by pnumber,pname having count(essn)>2;
+
+   PNUMBER PNAME           COUNT(ESSN)
+---------- --------------- -----------
+        20 Reorganization            3
+        10 Computerization           3
+        30 Newbenefits               3
+         2 ProductY                  3
+
+
+13)
+
+
+
+
+
+
+
+
+
+
+
+
+

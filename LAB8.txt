@@ -1,0 +1,250 @@
+1)
+
+SQL> create table salary_raise(
+  2      instructor_id number,
+  3      raise_date date,
+  4      raise_amt number);
+
+Table created.
+
+SQL> set serveroutput on
+SQL> declare
+  2      cursor c(dname instructor1.dept_name%TYPE) is select * from instructor1 where dept_name = dname;
+  3      str instructor1.dept_name%TYPE;
+  4      inst instructor1%ROWTYPE;
+  5  begin
+  6      str := '&DeptName';
+  7      open c(str);
+  8      loop
+  9          fetch c into inst;
+ 10          exit when c%NOTFOUND;
+ 11          update instructor1 set salary = salary * 1.05 where id = inst.id;
+ 12          insert into salary_raise values(inst.id, SYSDATE, inst.salary * 0.05);
+ 13      end loop;
+ 14      close c;
+ 15  end;
+ 16  /
+Enter value for deptname: Comp. Sci.
+old   6:     str := '&DeptName';
+new   6:     str := 'Comp. Sci.';
+
+PL/SQL procedure successfully completed.
+
+SQL> select salary from instructor1 where dept_name='Comp. Sci.';
+
+    SALARY
+----------
+     68250
+     78750
+     96600
+
+
+3)
+
+ set serveroutput on
+SQL> declare
+  2      cursor c is select * from teaches1;
+  3      n number;
+  4      iname instructor1.name%TYPE;
+  5      courseRow course1%ROWTYPE;
+  6      sectionRow section1%ROWTYPE;
+  7  begin
+  8      for I in c
+  9      loop
+ 10          begin
+ 11              select count(*) into n from takes1 group by course_id, sec_id, semester, year
+ 12              having course_id = I.course_id and sec_id = I.sec_id and semester = I.semester and year = I.year;
+ 13              exception
+ 14                  when no_data_found then n := 0;
+ 15              end;
+ 16              select name into iname from instructor1 where id = i.id;
+ 17              select * into sectionRow from section1
+ 18              where course_id = I.course_id and sec_id = I.sec_id and semester = I.semester and year = I.year;
+ 19              select * into courseRow from course1 where course_id = i.course_id;
+ 20
+ 21              DBMS_OUTPUT.PUT_LINE('Course ID: ' || I.course_id || ' Title: ' || courseRow.title || ' Dept name: ' || courseRow.dept_name || ' Credits: ' || courseRow.credits ||
+ 22          ' Instructor name: ' || iname || ' Building: ' || sectionRow.building || ' Room number: ' || sectionRow.room_number || ' Time slot id: ' || sectionRow.time_slot_id || ' Total students enrolled: ' || n);
+ 23      end loop;
+ 24  end;
+ 25  /
+Course ID: CS-101 Title: Intro. to Computer Science Dept name: Comp. Sci.
+Credits: 4 Instructor name: Srinivasan Building: Packard Room number: 101 Time
+slot id: H Total students enrolled: 6
+Course ID: CS-315 Title: Robotics Dept name: Comp. Sci. Credits: 3 Instructor
+name: Srinivasan Building: Watson Room number: 120 Time slot id: D Total
+students enrolled: 2
+Course ID: CS-347 Title: Database System Concepts Dept name: Comp. Sci. Credits:
+3 Instructor name: Srinivasan Building: Taylor Room number: 3128 Time slot id: A
+Total students enrolled: 2
+Course ID: FIN-201 Title: Investment Banking Dept name: Finance Credits: 3
+Instructor name: Wu Building: Packard Room number: 101 Time slot id: B Total
+students enrolled: 1
+Course ID: MU-199 Title: Music Video Production Dept name: Music Credits: 3
+Instructor name: Mozart Building: Packard Room number: 101 Time slot id: D Total
+students enrolled: 1
+Course ID: PHY-101 Title: Physical Principles Dept name: Physics Credits: 4
+Instructor name: Einstein Building: Watson Room number: 100 Time slot id: A
+Total students enrolled: 1
+Course ID: HIS-351 Title: World History Dept name: History Credits: 3 Instructor
+name: El Said Building: Painter Room number: 514 Time slot id: C Total students
+enrolled: 1
+Course ID: CS-101 Title: Intro. to Computer Science Dept name: Comp. Sci.
+Credits: 4 Instructor name: Katz Building: Packard Room number: 101 Time slot
+id: F Total students enrolled: 1
+Course ID: CS-319 Title: Image Processing Dept name: Comp. Sci. Credits: 3
+Instructor name: Katz Building: Watson Room number: 100 Time slot id: B Total
+students enrolled: 1
+Course ID: BIO-101 Title: Intro. to Biology Dept name: Biology Credits: 4
+Instructor name: Crick Building: Painter Room number: 514 Time slot id: B Total
+students enrolled: 1
+Course ID: BIO-301 Title: Genetics Dept name: Biology Credits: 4 Instructor
+name: Crick Building: Painter Room number: 514 Time slot id: A Total students
+enrolled: 1
+Course ID: CS-190 Title: Game Design Dept name: Comp. Sci. Credits: 4 Instructor
+name: Brandt Building: Taylor Room number: 3128 Time slot id: E Total students
+enrolled: 0
+Course ID: CS-190 Title: Game Design Dept name: Comp. Sci. Credits: 4 Instructor
+name: Brandt Building: Taylor Room number: 3128 Time slot id: A Total students
+enrolled: 2
+Course ID: CS-319 Title: Image Processing Dept name: Comp. Sci. Credits: 3
+Instructor name: Brandt Building: Taylor Room number: 3128 Time slot id: C Total
+students enrolled: 1
+Course ID: EE-181 Title: Intro. to Digital Systems Dept name: Elec. Eng.
+Credits: 3 Instructor name: Kim Building: Taylor Room number: 3128 Time slot id:
+C Total students enrolled: 1
+
+PL/SQL procedure successfully completed.
+
+
+4)
+
+set serveroutput on
+SQL> declare
+  2      cursor c is select * from takes1 where course_id = 'CS-101';
+  3      cr student1.tot_cred%TYPE;
+  4  begin
+  5      for i in c
+  6      loop
+  7          select tot_cred into cr from student1 where id = i.id;
+  8          if cr < 40 then
+  9              delete from takes1 where id = i.id and course_id = i.course_id;
+ 10          end if;
+ 11      end loop;
+ 12  end;
+ 13  /
+
+PL/SQL procedure successfully completed.
+
+
+5)
+
+SQL> update StudentTable set LetterGrade = 'F';
+
+5 rows updated.
+
+SQL>
+SQL> set serveroutput on
+SQL> declare
+  2      cursor c is select * from StudentTable for update;
+  3      g StudentTable.GPA%TYPE;
+  4  begin
+  5      for i in c
+  6      loop
+  7          g := i.gpa;
+  8          if g > 0 and g <= 4 then
+  9              update StudentTable set LetterGrade = 'F' where current of c;
+ 10          elsif g > 4 and g <= 5 then
+ 11              update StudentTable set LetterGrade = 'E' where current of c;
+ 12          elsif g > 5 and g <= 6 then
+ 13              update StudentTable set LetterGrade = 'D' where current of c;
+ 14          elsif g > 6 and g <= 7 then
+ 15              update StudentTable set LetterGrade = 'C' where current of c;
+ 16          elsif g > 7 and g <= 8 then
+ 17              update StudentTable set LetterGrade = 'B' where current of c;
+ 18          elsif g > 8 and g <= 9 then
+ 19              update StudentTable set LetterGrade = 'A' where current of c;
+ 20          elsif g > 9 and g <= 10 then
+ 21              update StudentTable set LetterGrade = 'A+' where current of c;
+ 22          end if;
+ 23      end loop;
+ 24  end;
+ 25  /
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> SELECT * FROM STUDENTTABLE;
+
+    ROLLNO        GPA LE
+---------- ---------- --
+         1        5.8 D
+         2        6.5 C
+         3        3.4 F
+         4        7.8 B
+         5        9.5 A+
+
+
+
+6)
+
+
+ set serveroutput on
+SQL> declare
+  2      cursor c(cid teaches1.course_id%TYPE) is select distinct id from teaches1 where course_id = cid;
+  3      iname instructor1.name%TYPE;
+  4      cid teaches1.course_id%TYPE;
+  5  begin
+  6      cid := '&CourseID';
+  7      for i in c(cid)
+  8      loop
+  9          select name into iname from instructor1 where id = i.id;
+ 10          dbms_output.put_line('ID: ' || i.id || ' Name: ' || iname);
+ 11      end loop;
+ 12  end;
+ 13  /
+Enter value for courseid: BIO-101
+old   6:     cid := '&CourseID';
+new   6:     cid := 'BIO-101';
+ID: 76766 Name: Crick
+
+PL/SQL procedure successfully completed.
+
+SQL>
+
+
+7)
+
+
+SQL> set serveroutput on
+SQL> declare
+  2      cursor C1 is select * from advisor1;
+  3      cursor C2(i takes1.ID%TYPE) is select * from takes1 where ID = i;
+  4      cursor C3(i teaches1.ID%TYPE) is select * from teaches1 where ID = i;
+  5      stdName student1.name%TYPE;
+  6      flag numeric(1);
+  7  begin
+  8      for i in c1
+  9      loop
+ 10          flag := 0;
+ 11          for j in c2(i.s_id)
+ 12          loop
+ 13              for z in c3(i.i_id)
+ 14              loop
+ 15                  if j.course_id = z.course_id and j.sec_id = z.sec_id and j.semester = z.semester and j.year = z.year then
+ 16                  select name into stdName from student1 where id = j.id;
+ 17                  dbms_output.put_line('ID: ' || j.id || 'Name: ' || stdName);
+ 18                  flag := 1;
+ 19                  end if;
+ 20              end loop;
+ 21              if flag = 1 then exit;
+ 22              end if;
+ 23          end loop;
+ 24      end loop;
+ 25  end;
+ 27  /
+ID: 12345Name: Shankar
+ID: 44553Name: Peltier
+ID: 76653Name: Aoi
+ID: 98988Name: Tanaka
+
+PL/SQL procedure successfully completed.

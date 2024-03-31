@@ -283,3 +283,9 @@ begin
 	dbms_output.put_line('Tot Sum '||tot_sum);
 end;
 /
+
+OUTPUT
+
+Simple Interest 1000
+Compound Interest 3595940
+Tot Sum 3606940

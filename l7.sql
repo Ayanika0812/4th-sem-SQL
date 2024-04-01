@@ -176,6 +176,31 @@ begin
 end;
 /
 
+	OR
+
+set serveroutput on;
+declare
+    rollnum studenttable.rollno%type;
+    cgpa studenttable.gpa%type;
+    max_gpa studenttable.gpa%type;
+    max_rollno studenttable.rollno%type;
+begin
+    max_gpa := 0;
+    for i in 1..5 loop
+        select gpa into cgpa from studenttable where rollno = i;
+        if cgpa > max_gpa then
+            max_gpa := cgpa;
+            max_rollno := i;
+        end if;
+    end loop;
+
+    dbms_output.put_line('max gpa is '||max_gpa);
+    dbms_output.put_line('student having max gpa is '||max_rollno);
+end;
+/
+	
+
+	 
 7)
 set serveroutput on
 declare
